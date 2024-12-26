@@ -1,72 +1,33 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { items } from "@wix/data";
 import { createClient, OAuthStrategy } from "@wix/sdk";
 
-const Blog = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export default async function BlogPost() {
+  const wixClient = createClient({
+    modules: { items },
+    auth: OAuthStrategy({
+      clientId: process.env.CLIENT_ID,
+    }),
+  });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const wixClient = createClient({
-        modules: { items },
-        auth: OAuthStrategy({
-          clientId: process.env.NEXT_PUBLIC_CLIENT_ID,
-        }),
-      });
+  const postsResponse = await wixClient.items
+    .queryDataItems({
+      dataCollectionId: "BlogPost",
+    })
+    .find();
 
-      try {
-        const response = await wixClient.items
-          .queryDataItems({
-            dataCollectionId: "BlogPost",
-          })
-          .find();
-        setData(response.items);
-      } catch (err) {
-        console.error("Error fetching Wix data:", err);
-        setError("Failed to fetch data.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  if (loading) {
-    return <p>Loading...</p>;
-  }
-
-  if (error) {
-    return <p>Error: {error}</p>;
-  }
+  console.log("Posts Response:", postsResponse.items);
 
   return (
-    <div className="flex flex-col items-center justify-items-center min-h-screen">
-      {data.map((item) => (
-        <div
-          key={item.data._id}
-          className="w-full h-[100vh] bg-white shadow-md rounded-lg p-6"
-        >
-          <h2 className="text-xl text-black font-bold mb-2">
-            {item.data.title}
-          </h2>
-          <p className="text-black mb-4">{item.data.author}</p>
-          {item.data.featuredImage && (
-            <img
-              src={item.data.featuredImage}
-              alt={item.data.title}
-              className="mb-4 w-full h-full object-cover"
-            />
-          )}
-          <p className="text-gray-800">{item.data.content}</p>
+    <div className="max-w-4xl mx-auto p-4 space-y-4">
+      {postsResponse.items.map((post) => (
+        <div key={post._id} className="w-full h-[100vh]">
+          <img
+            className="h-[50vh] w-full object-cover"
+            src={post.data.featuredImage}
+          />
         </div>
       ))}
     </div>
   );
-};
-
-export default Blog;
+}
