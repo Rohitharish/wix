@@ -6,7 +6,7 @@ export default async function BlogPost() {
   const wixClient = createClient({
     modules: { items },
     auth: OAuthStrategy({
-      clientId: process.env.CLIENT_ID,
+      clientId: process.env.NEXT_PUBLIC_CLIENT_ID,
     }),
   });
 
